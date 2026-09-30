@@ -29,8 +29,14 @@ class Command(BaseCommand):
     def handle(self, *args, **opts):
         for name, desc in CATEGORIES:
             Category.objects.get_or_create(name=name, defaults={"description": desc})
+        import os
+        reset = os.environ.get("RESET_DEMO_PASSWORDS", "").lower() in {"1", "true", "yes"}
         for email, phone, name, role in USERS:
-            if User.objects.filter(email=email).exists():
+            existing = User.objects.filter(email=email).first()
+            if existing:
+                if reset:
+                    existing.set_password(opts["password"])
+                    existing.save()
                 continue
             if role == Role.ADMIN:
                 User.objects.create_superuser(email, opts["password"], phone=phone, full_name=name)

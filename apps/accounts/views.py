@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from apps.audit.services import audit
 from common.throttling import AuthRateThrottle
 
-from .serializers import LoginSerializer, RegisterSerializer, UserSerializer
+from .serializers import ChangePasswordSerializer, LoginSerializer, RegisterSerializer, UserSerializer
 
 
 class RegisterView(generics.CreateAPIView):
@@ -42,3 +42,19 @@ class MeView(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class ChangePasswordView(generics.GenericAPIView):
+    """Logged-in user changes their own password (must know the current one)."""
+
+    serializer_class = ChangePasswordSerializer
+    throttle_classes = [AuthRateThrottle]
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = request.user
+        user.set_password(serializer.validated_data["new_password"])
+        user.save(update_fields=["password"])
+        audit.log("auth.password_changed", actor=user, target=user, request=request)
+        return Response({"detail": "Password changed successfully."})

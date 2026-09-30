@@ -22,6 +22,19 @@
       <div class="modal-content"><div class="modal-body" id="detailBody"></div></div>
     </div>
   </div>
+  <div class="modal fade" id="pwModal" tabindex="-1">
+    <div class="modal-dialog">
+      <form class="modal-content" id="pwForm">
+        <div class="modal-header"><h5 class="modal-title">Change password</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <input class="form-control mb-2" name="old_password" type="password" placeholder="Current password" autocomplete="current-password" required>
+          <input class="form-control mb-2" name="new_password" type="password" minlength="8" placeholder="New password (min 8 characters)" autocomplete="new-password" required>
+          <input class="form-control" name="confirm_password" type="password" minlength="8" placeholder="Confirm new password" autocomplete="new-password" required>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Save password</button></div>
+      </form>
+    </div>
+  </div>
   <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toasts"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

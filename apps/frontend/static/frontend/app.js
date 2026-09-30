@@ -275,8 +275,14 @@ function viewFor() {
 async function boot() {
   if (!S.access) return renderAuth();
   try { S.user = await api("/auth/me/"); } catch { return renderAuth(); }
-  $("#nav-user").innerHTML = `${esc(S.user.full_name)} <span class="badge text-bg-light">${esc(S.user.role)}</span> <button class="btn btn-sm btn-outline-light ms-2" id="logout">Logout</button>`;
+  $("#nav-user").innerHTML = `${esc(S.user.full_name)} <span class="badge text-bg-light">${esc(S.user.role)}</span> <button class="btn btn-sm btn-outline-light ms-2" id="change-pw">Change password</button> <button class="btn btn-sm btn-outline-light ms-1" id="logout">Logout</button>`;
   $("#logout").onclick = logout;
+  $("#change-pw").onclick = () => { $("#pwForm").reset(); bootstrap.Modal.getOrCreateInstance($("#pwModal")).show(); };
   act(viewFor);
 }
+$("#pwForm").onsubmit = (e) => { e.preventDefault(); act(async () => {
+  const d = Object.fromEntries(new FormData(e.target));
+  if (d.new_password !== d.confirm_password) throw new Error("New passwords do not match.");
+  await api("/auth/change-password/", { method: "POST", body: { old_password: d.old_password, new_password: d.new_password } });
+  bootstrap.Modal.getOrCreateInstance($("#pwModal")).hide(); e.target.reset(); toast("Password changed successfully."); }); };
 boot();

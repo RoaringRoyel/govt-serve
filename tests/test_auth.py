@@ -76,3 +76,32 @@ class RateLimitTests(BaseAPITest):
         self.assertEqual(codes, [200, 200, 200, 429])
         self.as_user(self.other)  # a different user has their own bucket
         self.assertEqual(self.client.get("/api/requests/").status_code, 200)
+
+
+class ChangePasswordTests(BaseAPITest):
+    URL = "/api/auth/change-password/"
+    NEW = "N3w!Secure#Pass77"
+
+    def test_requires_login(self):
+        self.client.force_authenticate(None)
+        res = self.client.post(self.URL, {"old_password": PASSWORD, "new_password": self.NEW}, format="json")
+        self.assertEqual(res.status_code, 401)
+
+    def test_change_password_success(self):
+        res = self.call(self.citizen, "post", self.URL, {"old_password": PASSWORD, "new_password": self.NEW})
+        self.assertEqual(res.status_code, 200)
+        self.citizen.refresh_from_db()
+        self.assertTrue(self.citizen.check_password(self.NEW))
+        self.assertFalse(self.citizen.check_password(PASSWORD))
+
+    def test_wrong_old_password_rejected(self):
+        res = self.call(self.citizen, "post", self.URL, {"old_password": "wrong-one-123", "new_password": self.NEW})
+        self.assertEqual(res.status_code, 400)
+        self.citizen.refresh_from_db()
+        self.assertTrue(self.citizen.check_password(PASSWORD))
+
+    def test_weak_or_same_password_rejected(self):
+        weak = self.call(self.citizen, "post", self.URL, {"old_password": PASSWORD, "new_password": "12345678"})
+        self.assertEqual(weak.status_code, 400)
+        same = self.call(self.citizen, "post", self.URL, {"old_password": PASSWORD, "new_password": PASSWORD})
+        self.assertEqual(same.status_code, 400)

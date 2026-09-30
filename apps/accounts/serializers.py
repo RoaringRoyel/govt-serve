@@ -57,3 +57,20 @@ class LoginSerializer(TokenObtainPairSerializer):
         data["user"] = UserSerializer(self.user).data
         audit.log("auth.login", actor=self.user, target=self.user, request=request)
         return data
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(write_only=True, style={"input_type": "password"})
+    new_password = serializers.CharField(write_only=True, min_length=8, style={"input_type": "password"})
+
+    def validate_old_password(self, value):
+        if not self.context["request"].user.check_password(value):
+            raise serializers.ValidationError("Current password is incorrect.")
+        return value
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        if attrs["old_password"] == attrs["new_password"]:
+            raise serializers.ValidationError({"new_password": "New password must be different from the current one."})
+        validate_password(attrs["new_password"], user)
+        return attrs

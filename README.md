@@ -5,7 +5,7 @@
 A backend service (with a small web UI) where citizens submit service requests such as NID, passport, missing
 report and police verification, admins validate them and assign officers, and officers process them.
 
-- **Live demo:** _add your URL here after deploying (see [Deploy](#[https://govt-serve.onrender.com/ ]()))_
+- **Live demo:** _add your URL here after deploying link: "choose-a-private-demo-password"
 - **API docs (Swagger):** `/api/docs/`
 
 ## Tech stack
